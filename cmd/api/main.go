@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -11,6 +10,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -64,12 +65,13 @@ func main() {
 
 	log.Println("connected to postgres")
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/health", health)
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+	r.Get("/health", health)
 
 	server := &http.Server{
 		Addr:              ":8080",
-		Handler:           mux,
+		Handler:           r,
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      10 * time.Second,
@@ -78,7 +80,7 @@ func main() {
 
 	log.Printf("server listening on %s", server.Addr)
 
-	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Fatal("http server error:", err)
+	if err := server.ListenAndServe(); err != nil {
+		log.Fatalf("server listen and serve: %v", err)
 	}
 }
