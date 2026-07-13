@@ -4,9 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net"
 	"net/http"
-	"net/url"
 	"os"
 	"time"
 
@@ -33,27 +31,10 @@ func health(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	dbUrl := url.URL{
-		Scheme: "postgres",
-		User: url.UserPassword(
-			mustEnv("POSTGRES_USER"),
-			mustEnv("POSTGRES_PASSWORD"),
-		),
-		Host: net.JoinHostPort(
-			mustEnv("POSTGRES_HOST"),
-			mustEnv("POSTGRES_PORT"),
-		),
-		Path: mustEnv("POSTGRES_DB"),
-	}
-
-	query := dbUrl.Query()
-	query.Add("sslmode", "disable")
-	dbUrl.RawQuery = query.Encode()
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	pool, err := pgxpool.New(ctx, dbUrl.String())
+	pool, err := pgxpool.New(ctx, os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatalf("create database pool: %v", err)
 	}
