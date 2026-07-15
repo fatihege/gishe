@@ -10,10 +10,15 @@ type User struct {
 	CreatedAt    time.Time
 }
 
+type Token struct {
+	AccessToken string    `json:"access_token"`
+	ExpiresAt   time.Time `json:"expires_at"`
+}
+
 type UserResponse struct {
-	ID    string
-	Name  string
-	Email string
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }
 
 func NewUserResponse(user User) UserResponse {

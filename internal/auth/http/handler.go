@@ -30,7 +30,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.service.Register(ctx, auth.RegisterInput{
+	user, token, err := h.service.Register(ctx, auth.RegisterInput{
 		Name:     request.Name,
 		Email:    request.Email,
 		Password: request.Password,
@@ -52,7 +52,8 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpx.WriteJSON(w, http.StatusCreated, map[string]any{
-		"user": auth.NewUserResponse(user),
+		"user":  auth.NewUserResponse(user),
+		"token": token,
 	})
 }
 
@@ -68,7 +69,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.service.Login(ctx, auth.LoginInput{
+	user, token, err := h.service.Login(ctx, auth.LoginInput{
 		Email:    request.Email,
 		Password: request.Password,
 	})
@@ -84,6 +85,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{
-		"user": auth.NewUserResponse(user),
+		"user":  auth.NewUserResponse(user),
+		"token": token,
 	})
 }

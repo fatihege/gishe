@@ -43,7 +43,10 @@ func main() {
 
 	authRepository := authpostgres.New(pool)
 	passwordHasher := auth.NewPasswordHasher()
-	authService := auth.NewService(authRepository, passwordHasher)
+
+	tokenManager := auth.NewTokenManager([]byte(cfg.JWTSecret), cfg.JWTIssuer, cfg.JWTAudience)
+
+	authService := auth.NewService(authRepository, passwordHasher, tokenManager)
 	authHandler := authhttp.NewHandler(authService)
 
 	r := chi.NewRouter()

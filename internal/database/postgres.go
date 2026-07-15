@@ -8,8 +8,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func Open(ctx context.Context, databaseUrl string) (*pgxpool.Pool, error) {
-	cfg, err := pgxpool.ParseConfig(databaseUrl)
+func Open(ctx context.Context, databaseURL string) (*pgxpool.Pool, error) {
+	cfg, err := pgxpool.ParseConfig(databaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("parse postgres configuration: %w", err)
 	}

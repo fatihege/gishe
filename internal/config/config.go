@@ -8,12 +8,16 @@ import (
 
 type Config struct {
 	HTTPAddress string
+
 	DatabaseURL string
+
 	JWTSecret   string
+	JWTIssuer   string
+	JWTAudience string
 }
 
 func Load() (Config, error) {
-	databaseUrl, err := buildDatabaseUrl()
+	databaseURL, err := buildDatabaseUrl()
 	if err != nil {
 		return Config{}, err
 	}
@@ -30,8 +34,10 @@ func Load() (Config, error) {
 
 	return Config{
 		HTTPAddress: httpAddress,
-		DatabaseURL: databaseUrl,
+		DatabaseURL: databaseURL,
 		JWTSecret:   jwtSecret,
+		JWTIssuer:   "gishe-api",
+		JWTAudience: "gishe-client",
 	}, nil
 }
 
