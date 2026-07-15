@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -32,20 +33,60 @@ func (s *Service) Register(ctx context.Context, input RegisterInput) (User, erro
 		return User{}, fmt.Errorf("email required")
 	}
 
+	foundUser, err := s.repository.FindUserByEmail(ctx, email)
+	if foundUser.ID != "" {
+		return User{}, ErrEmailAlreadyExists
+	}
+
 	if len(input.Password) < 4 {
-		return User{}, fmt.Errorf("weak password")
+		return User{}, ErrWeakPassword
 	}
 
 	passwordHash, err := s.passwords.Hash(input.Password)
 	if err != nil {
-		return User{}, fmt.Errorf("hash password: %v", err)
+		return User{}, err
 	}
 
 	user, err := s.repository.CreateUser(ctx, User{
 		Name: name, Email: email, PasswordHash: passwordHash, CreatedAt: time.Now(),
 	})
 	if err != nil {
-		return User{}, fmt.Errorf("create user: %v", err)
+		return User{}, err
+	}
+
+	return user, nil
+}
+
+type LoginInput struct {
+	Email    string
+	Password string
+}
+
+func (s *Service) Login(ctx context.Context, input LoginInput) (User, error) {
+	email := normalizeEmail(input.Email)
+	if email == "" {
+		return User{}, fmt.Errorf("email required")
+	}
+
+	if input.Password == "" {
+		return User{}, fmt.Errorf("password required")
+	}
+
+	user, err := s.repository.FindUserByEmail(ctx, email)
+	if errors.Is(err, ErrUserNotFound) {
+		return User{}, ErrInvalidCredentials
+	}
+	if err != nil {
+		return User{}, err
+	}
+
+	match, err := s.passwords.Compare(input.Password, user.PasswordHash)
+	if err != nil {
+		return User{}, err
+	}
+
+	if !match {
+		return User{}, ErrInvalidCredentials
 	}
 
 	return user, nil

@@ -2,9 +2,11 @@ package authpostgres
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/fatihege/gishe/internal/auth"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -48,6 +50,9 @@ func (r *Repository) FindUserByEmail(ctx context.Context, email string) (auth.Us
 	err := r.db.QueryRow(ctx, query, email).Scan(
 		&user.ID, &user.Name, &user.Email, &user.PasswordHash, &user.CreatedAt,
 	)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return auth.User{}, auth.ErrUserNotFound
+	}
 	if err != nil {
 		return auth.User{}, fmt.Errorf("find user by email: %v", err)
 	}
@@ -66,6 +71,9 @@ func (r *Repository) FindUserByID(ctx context.Context, id string) (auth.User, er
 	err := r.db.QueryRow(ctx, query, id).Scan(
 		&user.ID, &user.Name, &user.Email, &user.PasswordHash, &user.CreatedAt,
 	)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return auth.User{}, auth.ErrUserNotFound
+	}
 	if err != nil {
 		return auth.User{}, fmt.Errorf("find user by id: %v", err)
 	}

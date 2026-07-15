@@ -49,7 +49,11 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Get("/health", health)
-	r.Post("/auth/register", authHandler.Register)
+
+	r.Route("/auth", func(r chi.Router) {
+		r.Post("/register", authHandler.Register)
+		r.Post("/login", authHandler.Login)
+	})
 
 	server := &http.Server{
 		Addr:              cfg.HTTPAddress,

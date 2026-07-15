@@ -1,6 +1,7 @@
 package authhttp
 
 import (
+	"errors"
 	"log"
 	"net/http"
 
@@ -25,7 +26,6 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := httpx.ReadJSON(w, r, &request); err != nil {
-		log.Println("readjson:", err)
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
@@ -36,11 +36,54 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		Password: request.Password,
 	})
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "an error occurred while registering the user")
+		switch {
+		case errors.Is(err, auth.ErrEmailAlreadyExists):
+			httpx.WriteError(w, http.StatusConflict, "user with this email already exists")
+
+		case errors.Is(err, auth.ErrWeakPassword):
+			httpx.WriteError(w, http.StatusUnprocessableEntity, "password does not meet requirements")
+
+		default:
+			log.Println("register:", err)
+			httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
+		}
+
 		return
 	}
 
 	httpx.WriteJSON(w, http.StatusCreated, map[string]any{
+		"user": auth.NewUserResponse(user),
+	})
+}
+
+func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	var request struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	if err := httpx.ReadJSON(w, r, &request); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	user, err := h.service.Login(ctx, auth.LoginInput{
+		Email:    request.Email,
+		Password: request.Password,
+	})
+	if err != nil {
+		if errors.Is(err, auth.ErrInvalidCredentials) {
+			httpx.WriteError(w, http.StatusUnauthorized, "invalid email or password")
+		} else {
+			log.Println("login:", err)
+			httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
+		}
+
+		return
+	}
+
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{
 		"user": auth.NewUserResponse(user),
 	})
 }
