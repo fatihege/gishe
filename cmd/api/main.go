@@ -7,6 +7,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/fatihege/gishe/internal/auth"
+	authhttp "github.com/fatihege/gishe/internal/auth/http"
+	authpostgres "github.com/fatihege/gishe/internal/auth/postgres"
 	"github.com/fatihege/gishe/internal/config"
 	"github.com/fatihege/gishe/internal/database"
 	"github.com/go-chi/chi/v5"
@@ -36,15 +39,17 @@ func main() {
 	}
 	defer pool.Close()
 
-	if err := pool.Ping(ctx); err != nil {
-		log.Fatalf("ping database: %v", err)
-	}
-
 	log.Println("connected to postgres")
+
+	authRepository := authpostgres.New(pool)
+	passwordHasher := auth.NewPasswordHasher()
+	authService := auth.NewService(authRepository, passwordHasher)
+	authHandler := authhttp.NewHandler(authService)
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Get("/health", health)
+	r.Post("/auth/register", authHandler.Register)
 
 	server := &http.Server{
 		Addr:              cfg.HTTPAddress,
