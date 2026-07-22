@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"time"
 )
 
 type Service struct {
@@ -27,6 +26,12 @@ type RegisterInput struct {
 	Name     string
 	Email    string
 	Password string
+}
+
+type RegisterInputHashed struct {
+	Name         string
+	Email        string
+	PasswordHash string
 }
 
 func (s *Service) Register(ctx context.Context, input RegisterInput) (User, Token, error) {
@@ -50,8 +55,8 @@ func (s *Service) Register(ctx context.Context, input RegisterInput) (User, Toke
 		return User{}, Token{}, err
 	}
 
-	user, err := s.repository.CreateUser(ctx, User{
-		Name: name, Email: email, PasswordHash: passwordHash, CreatedAt: time.Now().UTC(),
+	user, err := s.repository.CreateUser(ctx, RegisterInputHashed{
+		Name: name, Email: email, PasswordHash: passwordHash,
 	})
 	if err != nil {
 		return User{}, Token{}, err

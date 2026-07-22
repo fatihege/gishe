@@ -5,7 +5,7 @@ import (
 )
 
 type Repository interface {
-	CreateUser(ctx context.Context, user User) (User, error)
+	CreateUser(ctx context.Context, user RegisterInputHashed) (User, error)
 
 	FindUserByEmail(ctx context.Context, email string) (User, error)
 

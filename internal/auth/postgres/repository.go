@@ -18,17 +18,17 @@ func New(db *pgxpool.Pool) *Repository {
 	return &Repository{db: db}
 }
 
-func (r *Repository) CreateUser(ctx context.Context, user auth.User) (auth.User, error) {
+func (r *Repository) CreateUser(ctx context.Context, user auth.RegisterInputHashed) (auth.User, error) {
 	query := `
-		INSERT INTO users (name, email, password_hash, created_at)
-		VALUES ($1, $2, $3, $4)
+		INSERT INTO users (name, email, password_hash)
+		VALUES ($1, $2, $3)
 		RETURNING id, name, email, password_hash, created_at
 	`
 
 	var newUser auth.User
 
 	err := r.db.QueryRow(
-		ctx, query, user.Name, user.Email, user.PasswordHash, user.CreatedAt,
+		ctx, query, user.Name, user.Email, user.PasswordHash,
 	).Scan(
 		&newUser.ID, &newUser.Name, &newUser.Email, &newUser.PasswordHash, &newUser.CreatedAt,
 	)
