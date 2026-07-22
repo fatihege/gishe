@@ -10,6 +10,9 @@ import (
 	"github.com/fatihege/gishe/internal/auth"
 	authhttp "github.com/fatihege/gishe/internal/auth/http"
 	authpostgres "github.com/fatihege/gishe/internal/auth/postgres"
+	"github.com/fatihege/gishe/internal/catalog"
+	cataloghttp "github.com/fatihege/gishe/internal/catalog/http"
+	catalogpostgres "github.com/fatihege/gishe/internal/catalog/postgres"
 	"github.com/fatihege/gishe/internal/config"
 	"github.com/fatihege/gishe/internal/database"
 	"github.com/go-chi/chi/v5"
@@ -49,6 +52,10 @@ func main() {
 	authService := auth.NewService(authRepository, passwordHasher, tokenManager)
 	authHandler := authhttp.NewHandler(authService)
 
+	catalogRepository := catalogpostgres.New(pool)
+	catalogService := catalog.NewService(catalogRepository)
+	catalogHandler := cataloghttp.NewHandler(catalogService)
+
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Get("/health", health)
@@ -56,6 +63,11 @@ func main() {
 	r.Route("/auth", func(r chi.Router) {
 		r.Post("/register", authHandler.Register)
 		r.Post("/login", authHandler.Login)
+	})
+
+	r.Route("/catalog", func(r chi.Router) {
+		r.Post("/venues", catalogHandler.CreateVenue)
+		r.Get("/venues", catalogHandler.GetVenues)
 	})
 
 	server := &http.Server{
