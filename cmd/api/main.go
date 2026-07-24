@@ -49,6 +49,8 @@ func main() {
 
 	tokenManager := auth.NewTokenManager([]byte(cfg.JWTSecret), cfg.JWTIssuer, cfg.JWTAudience)
 
+	authMiddleware := authhttp.NewMiddleware(tokenManager)
+
 	authService := auth.NewService(authRepository, passwordHasher, tokenManager)
 	authHandler := authhttp.NewHandler(authService)
 
@@ -65,14 +67,18 @@ func main() {
 		r.Post("/login", authHandler.Login)
 	})
 
-	r.Route("/catalog", func(r chi.Router) {
-		r.Post("/venues", catalogHandler.CreateVenue)
-		r.Get("/venues/{id}/sessions", catalogHandler.GetSessionsByVenueID)
-		r.Get("/venues", catalogHandler.GetVenues)
+	r.Group(func(r chi.Router) {
+		r.Use(authMiddleware.RequireAuthentication)
 
-		r.Get("/sessions/{id}", catalogHandler.GetSessionByID)
-		r.Post("/sessions", catalogHandler.CreateSession)
-		r.Get("/sessions", catalogHandler.GetSessions)
+		r.Route("/catalog", func(r chi.Router) {
+			r.Post("/venues", catalogHandler.CreateVenue)
+			r.Get("/venues/{id}/sessions", catalogHandler.GetSessionsByVenueID)
+			r.Get("/venues", catalogHandler.GetVenues)
+
+			r.Get("/sessions/{id}", catalogHandler.GetSessionByID)
+			r.Post("/sessions", catalogHandler.CreateSession)
+			r.Get("/sessions", catalogHandler.GetSessions)
+		})
 	})
 
 	server := &http.Server{

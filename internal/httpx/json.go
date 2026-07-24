@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func ReadJSON(w http.ResponseWriter, r *http.Request, dest any) error {
+func ReadJSON(r *http.Request, dest any) error {
 	return json.NewDecoder(r.Body).Decode(dest)
 }
 

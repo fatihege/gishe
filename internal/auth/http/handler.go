@@ -21,7 +21,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var input auth.RegisterInput
 
-	if err := httpx.ReadJSON(w, r, &input); err != nil {
+	if err := httpx.ReadJSON(r, &input); err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
@@ -31,6 +31,9 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, auth.ErrEmailAlreadyExists):
 			httpx.WriteError(w, http.StatusConflict, "user with this email already exists")
+
+		case errors.Is(err, auth.ErrEmailRequired):
+			httpx.WriteError(w, http.StatusBadRequest, "email is required")
 
 		case errors.Is(err, auth.ErrWeakPassword):
 			httpx.WriteError(w, http.StatusUnprocessableEntity, "password does not meet requirements")
@@ -53,16 +56,24 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var input auth.LoginInput
 
-	if err := httpx.ReadJSON(w, r, &input); err != nil {
+	if err := httpx.ReadJSON(r, &input); err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
 	user, token, err := h.service.Login(ctx, input)
 	if err != nil {
-		if errors.Is(err, auth.ErrInvalidCredentials) {
+		switch {
+		case errors.Is(err, auth.ErrInvalidCredentials):
 			httpx.WriteError(w, http.StatusUnauthorized, "invalid email or password")
-		} else {
+
+		case errors.Is(err, auth.ErrEmailRequired):
+			httpx.WriteError(w, http.StatusBadRequest, "email is required")
+
+		case errors.Is(err, auth.ErrPasswordRequired):
+			httpx.WriteError(w, http.StatusBadRequest, "password is required")
+
+		default:
 			log.Println("login:", err)
 			httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
 		}

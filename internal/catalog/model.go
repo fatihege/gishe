@@ -16,7 +16,7 @@ type Venue struct {
 
 type Session struct {
 	ID            uuid.UUID     `json:"id"`
-	VenueID       string        `json:"venue_id"`
+	VenueID       uuid.UUID     `json:"venue_id"`
 	Title         string        `json:"title"`
 	StartsAt      time.Time     `json:"starts_at"`
 	SalesOpensAt  time.Time     `json:"sales_opens_at"`
@@ -28,7 +28,7 @@ type Session struct {
 
 type Seat struct {
 	ID         uuid.UUID  `json:"id"`
-	SessionID  string     `json:"session_id"`
+	SessionID  uuid.UUID  `json:"session_id"`
 	RowLabel   string     `json:"row_label"`
 	SeatNumber int32      `json:"seat_number"`
 	PriceCents int32      `json:"price_cents"`

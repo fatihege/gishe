@@ -7,6 +7,7 @@ import (
 
 	"github.com/fatihege/gishe/internal/auth"
 	"github.com/fatihege/gishe/internal/httpx"
+	"github.com/google/uuid"
 )
 
 type contextKey string
@@ -27,9 +28,9 @@ func NewMiddleware(tokens *auth.TokenManager) *Middleware {
 
 func (m *Middleware) RequireAuthentication(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		header := r.Header.Get("Authentication")
+		header := r.Header.Get("Authorization")
 
-		const prefix = "Bearer: "
+		const prefix = "Bearer "
 
 		if !strings.HasPrefix(header, prefix) {
 			httpx.WriteError(w, http.StatusUnauthorized, "authentication required")
@@ -44,7 +45,13 @@ func (m *Middleware) RequireAuthentication(next http.Handler) http.Handler {
 			return
 		}
 
-		userID := claims.Subject
+		rawUserID := claims.Subject
+		userID, err := uuid.Parse(rawUserID)
+		if err != nil {
+			httpx.WriteError(w, http.StatusUnauthorized, "invalid user id")
+			return
+		}
+
 		ctx := context.WithValue(r.Context(), userIDKey, userID)
 
 		next.ServeHTTP(w, r.WithContext(ctx))

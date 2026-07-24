@@ -4,7 +4,7 @@ package catalog
 
 type SessionStatus string
 
-var (
+const (
 	SessionStatusDraft     SessionStatus = "draft"
 	SessionStatusPublished SessionStatus = "published"
 	SessionStatusCancelled SessionStatus = "cancelled"
@@ -34,7 +34,7 @@ func (s SessionStatus) IsValid() bool {
 
 type SeatStatus string
 
-var (
+const (
 	SeatStatusAvailable SeatStatus = "available"
 	SeatStatusHeld      SeatStatus = "held"
 	SeatStatusSold      SeatStatus = "sold"

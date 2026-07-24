@@ -8,6 +8,7 @@ import (
 	"github.com/fatihege/gishe/internal/auth"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -42,6 +43,12 @@ func (r *Repository) CreateUser(ctx context.Context, user auth.RegisterInputHash
 		&newUser.CreatedAt,
 	)
 	if err != nil {
+		var pgErr *pgconn.PgError
+
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return auth.User{}, auth.ErrEmailAlreadyExists
+		}
+
 		return auth.User{}, fmt.Errorf("create new user: %w", err)
 	}
 

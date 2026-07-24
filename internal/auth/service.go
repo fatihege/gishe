@@ -3,8 +3,6 @@ package auth
 import (
 	"context"
 	"errors"
-	"fmt"
-	"log"
 	"strings"
 
 	"github.com/google/uuid"
@@ -40,14 +38,14 @@ func (s *Service) Register(ctx context.Context, input RegisterInput) (User, Toke
 	name := strings.TrimSpace(input.Name)
 	email := normalizeEmail(input.Email)
 	if email == "" {
-		return User{}, Token{}, fmt.Errorf("email required")
+		return User{}, Token{}, ErrEmailRequired
 	}
 
 	foundUser, err := s.repository.FindUserByEmail(ctx, email)
 	if foundUser.ID != uuid.Nil {
 		return User{}, Token{}, ErrEmailAlreadyExists
 	}
-	if err != nil {
+	if err != nil && !errors.Is(err, ErrUserNotFound) {
 		return User{}, Token{}, err
 	}
 
@@ -88,11 +86,11 @@ type LoginInput struct {
 func (s *Service) Login(ctx context.Context, input LoginInput) (User, Token, error) {
 	email := normalizeEmail(input.Email)
 	if email == "" {
-		return User{}, Token{}, fmt.Errorf("email required")
+		return User{}, Token{}, ErrEmailRequired
 	}
 
 	if input.Password == "" {
-		return User{}, Token{}, fmt.Errorf("password required")
+		return User{}, Token{}, ErrPasswordRequired
 	}
 
 	user, err := s.repository.FindUserByEmail(ctx, email)
@@ -121,14 +119,6 @@ func (s *Service) Login(ctx context.Context, input LoginInput) (User, Token, err
 		AccessToken: tokenString,
 		ExpiresAt:   expiresAt,
 	}
-
-	claims, err := s.tokens.ParseAccessToken(token.AccessToken)
-	if err != nil {
-		log.Printf("parse acces token: %v", err)
-		return User{}, Token{}, err
-	}
-
-	fmt.Println(claims.Subject)
 
 	return user, token, nil
 }

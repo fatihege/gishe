@@ -23,7 +23,7 @@ func (h *Handler) CreateVenue(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var input catalog.CreateVenueInput
 
-	if err := httpx.ReadJSON(w, r, &input); err != nil {
+	if err := httpx.ReadJSON(r, &input); err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
@@ -65,7 +65,7 @@ func (h *Handler) CreateSession(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var input catalog.CreateSessionInput
 
-	if err := httpx.ReadJSON(w, r, &input); err != nil {
+	if err := httpx.ReadJSON(r, &input); err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
