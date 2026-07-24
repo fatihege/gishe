@@ -23,9 +23,9 @@ func NewService(repository Repository, passwords *PasswordHasher, tokens *TokenM
 }
 
 type RegisterInput struct {
-	Name     string
-	Email    string
-	Password string
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type RegisterInputHashed struct {
@@ -76,8 +76,8 @@ func (s *Service) Register(ctx context.Context, input RegisterInput) (User, Toke
 }
 
 type LoginInput struct {
-	Email    string
-	Password string
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 func (s *Service) Login(ctx context.Context, input LoginInput) (User, Token, error) {

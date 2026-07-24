@@ -19,22 +19,14 @@ func NewHandler(service *auth.Service) *Handler {
 
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	var request struct {
-		Name     string `json:"name"`
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
+	var input auth.RegisterInput
 
-	if err := httpx.ReadJSON(w, r, &request); err != nil {
+	if err := httpx.ReadJSON(w, r, &input); err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
-	user, token, err := h.service.Register(ctx, auth.RegisterInput{
-		Name:     request.Name,
-		Email:    request.Email,
-		Password: request.Password,
-	})
+	user, token, err := h.service.Register(ctx, input)
 	if err != nil {
 		switch {
 		case errors.Is(err, auth.ErrEmailAlreadyExists):
@@ -59,20 +51,14 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	var request struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
+	var input auth.LoginInput
 
-	if err := httpx.ReadJSON(w, r, &request); err != nil {
+	if err := httpx.ReadJSON(w, r, &input); err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
-	user, token, err := h.service.Login(ctx, auth.LoginInput{
-		Email:    request.Email,
-		Password: request.Password,
-	})
+	user, token, err := h.service.Login(ctx, input)
 	if err != nil {
 		if errors.Is(err, auth.ErrInvalidCredentials) {
 			httpx.WriteError(w, http.StatusUnauthorized, "invalid email or password")
