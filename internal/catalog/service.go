@@ -5,6 +5,8 @@ import (
 	"errors"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Service struct {
@@ -43,7 +45,7 @@ func (s *Service) GetVenues(ctx context.Context) ([]Venue, error) {
 }
 
 type CreateSessionInput struct {
-	VenueID       string     `json:"venue_id"`
+	VenueID       uuid.UUID  `json:"venue_id"`
 	Title         string     `json:"title"`
 	StartsAt      time.Time  `json:"starts_at"`
 	SalesOpensAt  time.Time  `json:"sales_opens_at"`
@@ -51,10 +53,9 @@ type CreateSessionInput struct {
 }
 
 func (s *Service) CreateSession(ctx context.Context, input CreateSessionInput) (Session, error) {
-	input.VenueID = strings.TrimSpace(input.VenueID)
 	input.Title = strings.TrimSpace(input.Title)
 
-	if input.VenueID == "" {
+	if input.VenueID == uuid.Nil {
 		return Session{}, ErrInvalidVenue
 	}
 
@@ -96,7 +97,7 @@ func (s *Service) CreateSession(ctx context.Context, input CreateSessionInput) (
 	return session, nil
 }
 
-func (s *Service) GetSessionById(ctx context.Context, id string) (Session, error) {
+func (s *Service) GetSessionById(ctx context.Context, id uuid.UUID) (Session, error) {
 	return s.repository.FindSessionByID(ctx, id)
 }
 
@@ -104,7 +105,7 @@ func (s *Service) GetSessions(ctx context.Context) ([]Session, error) {
 	return s.repository.GetSessions(ctx)
 }
 
-func (s *Service) GetSessionsByVenueID(ctx context.Context, venueID string) ([]Session, error) {
+func (s *Service) GetSessionsByVenueID(ctx context.Context, venueID uuid.UUID) ([]Session, error) {
 	_, err := s.repository.FindVenueByID(ctx, venueID)
 	if errors.Is(err, ErrVenueNotFound) {
 		return nil, ErrInvalidVenue

@@ -1,9 +1,13 @@
 package catalog
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Venue struct {
-	ID        string    `json:"id"`
+	ID        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`
 	Address   string    `json:"address"`
 	City      string    `json:"city"`
@@ -11,7 +15,7 @@ type Venue struct {
 }
 
 type Session struct {
-	ID            string        `json:"id"`
+	ID            uuid.UUID     `json:"id"`
 	VenueID       string        `json:"venue_id"`
 	Title         string        `json:"title"`
 	StartsAt      time.Time     `json:"starts_at"`
@@ -23,7 +27,7 @@ type Session struct {
 }
 
 type Seat struct {
-	ID         string     `json:"id"`
+	ID         uuid.UUID  `json:"id"`
 	SessionID  string     `json:"session_id"`
 	RowLabel   string     `json:"row_label"`
 	SeatNumber int32      `json:"seat_number"`

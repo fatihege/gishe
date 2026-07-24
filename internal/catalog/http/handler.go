@@ -8,6 +8,7 @@ import (
 	"github.com/fatihege/gishe/internal/catalog"
 	"github.com/fatihege/gishe/internal/httpx"
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 )
 
 type Handler struct {
@@ -99,10 +100,11 @@ func (h *Handler) CreateSession(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) GetSessionByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	id := chi.URLParam(r, "id")
+	rawID := chi.URLParam(r, "id")
 
-	if id == "" {
-		httpx.WriteError(w, http.StatusBadRequest, "invalid id")
+	id, err := uuid.Parse(rawID)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid session id")
 		return
 	}
 
@@ -140,7 +142,13 @@ func (h *Handler) GetSessions(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) GetSessionsByVenueID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	venueID := chi.URLParam(r, "id")
+	rawVenueID := chi.URLParam(r, "id")
+
+	venueID, err := uuid.Parse(rawVenueID)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid venue id")
+		return
+	}
 
 	sessions, err := h.service.GetSessionsByVenueID(ctx, venueID)
 	if err != nil {

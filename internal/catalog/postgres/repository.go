@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/fatihege/gishe/internal/catalog"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -47,7 +48,7 @@ func (r *Repository) CreateVenue(ctx context.Context, input catalog.CreateVenueI
 	return venue, nil
 }
 
-func (r *Repository) FindVenueByID(ctx context.Context, id string) (catalog.Venue, error) {
+func (r *Repository) FindVenueByID(ctx context.Context, id uuid.UUID) (catalog.Venue, error) {
 	query := `
 		SELECT id, name, address, city, created_at
 		FROM venues
@@ -148,7 +149,7 @@ func (r *Repository) CreateSession(ctx context.Context, input catalog.CreateSess
 	return session, nil
 }
 
-func (r *Repository) FindSessionByID(ctx context.Context, id string) (catalog.Session, error) {
+func (r *Repository) FindSessionByID(ctx context.Context, id uuid.UUID) (catalog.Session, error) {
 	query := `
 		SELECT id, venue_id, title, starts_at, sales_opens_at, sales_closes_at, status, created_at, updated_at
 		FROM sessions
@@ -180,7 +181,7 @@ func (r *Repository) FindSessionByID(ctx context.Context, id string) (catalog.Se
 	return session, nil
 }
 
-func (r *Repository) FindSessionsByVenueID(ctx context.Context, venueID string) ([]catalog.Session, error) {
+func (r *Repository) FindSessionsByVenueID(ctx context.Context, venueID uuid.UUID) ([]catalog.Session, error) {
 	query := `
 		SELECT id, venue_id, title, starts_at, sales_opens_at, sales_closes_at, status, created_at, updated_at
 		FROM sessions

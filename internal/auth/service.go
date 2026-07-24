@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 type Service struct {
@@ -42,8 +44,11 @@ func (s *Service) Register(ctx context.Context, input RegisterInput) (User, Toke
 	}
 
 	foundUser, err := s.repository.FindUserByEmail(ctx, email)
-	if foundUser.ID != "" {
+	if foundUser.ID != uuid.Nil {
 		return User{}, Token{}, ErrEmailAlreadyExists
+	}
+	if err != nil {
+		return User{}, Token{}, err
 	}
 
 	if len(input.Password) < 4 {

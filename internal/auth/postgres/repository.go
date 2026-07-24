@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/fatihege/gishe/internal/auth"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -77,7 +78,7 @@ func (r *Repository) FindUserByEmail(ctx context.Context, email string) (auth.Us
 	return user, nil
 }
 
-func (r *Repository) FindUserByID(ctx context.Context, id string) (auth.User, error) {
+func (r *Repository) FindUserByID(ctx context.Context, id uuid.UUID) (auth.User, error) {
 	query := `
 		SELECT id, name, email, password_hash, created_at
 		FROM users

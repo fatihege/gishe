@@ -2,6 +2,8 @@ package auth
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 type Repository interface {
@@ -9,5 +11,5 @@ type Repository interface {
 
 	FindUserByEmail(ctx context.Context, email string) (User, error)
 
-	FindUserByID(ctx context.Context, id string) (User, error)
+	FindUserByID(ctx context.Context, id uuid.UUID) (User, error)
 }

@@ -32,7 +32,7 @@ func (m *TokenManager) NewAccessToken(user User) (string, time.Time, error) {
 	expiresAt := now.Add(m.accessTTL)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
-		Subject:   user.ID,
+		Subject:   user.ID.String(),
 		Issuer:    m.issuer,
 		Audience:  jwt.ClaimStrings{m.audience},
 		IssuedAt:  jwt.NewNumericDate(now),
